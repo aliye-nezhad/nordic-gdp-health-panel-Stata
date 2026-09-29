@@ -1,4 +1,4 @@
-# GDP and Health Indicators in Nordic Countries 
+# GDP and Health Indicators in Nordic Countries  
 
 ## Overview
 
