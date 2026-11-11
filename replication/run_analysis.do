@@ -209,7 +209,12 @@ if _rc {
     local warning_count = `warning_count' + 1
 }
 else {
-    xtserial lngdp lnl lna lnp
+    capture noisily xtserial lngdp lnl lna lnp
+    local xtserial_rc = _rc
+    if `xtserial_rc' != 0 {
+        display as error "xtserial failed with return code `xtserial_rc'."
+        local warning_count = `warning_count' + 1
+    }
 }
 
 /*******************************************************************************
@@ -276,7 +281,23 @@ twoway scatter fe_residuals fe_fitted, ///
 graph export "outputs/figures/fe_residuals_vs_fitted.png", replace width(2000)
 
 /*******************************************************************************
-13. Finish
+13. Validate generated artifacts
+
+This is an execution check only. It does not alter the model or estimates.
+*******************************************************************************/
+
+local expected_outputs "data/processed/nordic_gdp_health_panel_2000_2018.dta outputs/tables/descriptive_statistics.txt outputs/tables/correlation_matrix.txt outputs/tables/hausman_test.txt outputs/tables/model_comparison.txt outputs/figures/log_gdp_by_country.png outputs/figures/life_expectancy_by_country.png outputs/figures/age_dependency_by_country.png outputs/figures/fe_residuals_vs_fitted.png outputs/logs/nordic_panel_analysis.log"
+
+foreach output of local expected_outputs {
+    capture confirm file "`output'"
+    if _rc {
+        display as error "Required output missing: `output'"
+        local warning_count = `warning_count' + 1
+    }
+}
+
+/*******************************************************************************
+14. Finish
 *******************************************************************************/
 
 if `warning_count' == 0 {

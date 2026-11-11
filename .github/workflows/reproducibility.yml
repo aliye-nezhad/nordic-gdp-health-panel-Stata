@@ -2,7 +2,7 @@ name: Repository reproducibility checks
 
 on:
   push:
-    branches: [main, reproducibility-hardening]
+    branches: [main, reproducibility-hardening, final-reproducibility-gate]
   pull_request:
     branches: [main]
 
