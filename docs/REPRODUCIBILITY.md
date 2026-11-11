@@ -18,82 +18,65 @@ results, or establish that the econometric analysis has been reproduced.
 ### 2. Full statistical reproduction
 
 Full reproduction requires Stata 15.1 or later, installed and activated under
-a valid Stata license, and the community-contributed `xtserial` command for
-the Wooldridge serial-correlation test. Stata is proprietary software. A
-modified or unlicensed installation that reports a bad serial number or other
-license-validation error is not a valid execution environment and cannot be
-used to establish successful replication. Such an error is not evidence of a
-problem in this repository, its data, or its econometric specification. Do not
-attempt to bypass license validation; use an institutional, student, or other
-authorized Stata license.
+a valid Stata license. No user-written ado packages, Java components, or
+network downloads are required by the analysis workflow.
 
-Install `xtserial` once before running the analysis. The Stata Journal
-identifies `xtserial` as package `st0039` in issue `sj3-2`.
+The Wooldridge serial-correlation diagnostic is implemented natively with
+Stata's built-in `regress`, `predict`, and `test` commands. It follows the
+published Wooldridge/Drukker procedure implemented by the community-contributed
+`xtserial` command (Drukker, 2003; Stata Journal 3(2), 168-177), without
+requiring installation of package `st0039`.
 
-If, and only if, Stata is properly licensed and activated but displays
-`Java installation not found` or returns r(5004) while accessing the Stata
-Journal package index, this is a Stata installation/network component problem,
-not a failure in the econometric model. StataCorp documents the following
-repair for that Java error:
+The implementation:
+1. Regresses first differences of `lngdp`, `lnl`, `lna`, and `lnp` without
+   a constant, using standard errors clustered by `country_id`.
+2. Predicts residuals from that first-difference regression.
+3. Regresses those residuals on their one-period lags, without a constant,
+   again clustering by `country_id`.
+4. Tests the null restriction that the lagged-residual coefficient equals
+   -0.5.
 
-```stata
-update all, force
-```
+Results are written to
+`outputs/tables/wooldridge_serial_correlation_test.txt` and the main log.
+This is the published Wooldridge/Drukker procedure, not a substitute
+diagnostic or a change to the substantive economic model.
 
-Do not run this update in an installation that is reporting a bad serial
-number or other license-validation failure. For a validly licensed
-installation, allow the update to finish, close and restart Stata, and then
-install the dependency:
+**Small-panel inference limitation:** there are only four country clusters.
+Conventional cluster-robust inference with four clusters can be unreliable;
+the diagnostic's p-value should therefore not be treated as decisive evidence
+on its own.
 
-```stata
-net from https://www.stata-journal.com/software
-net cd sj3-2
-net describe st0039
-net install st0039
-which xtserial
-```
+Stata is proprietary software. Full statistical reproduction requires a
+genuine, properly licensed and activated installation. A modified or
+unlicensed installation reporting a bad serial number is not a valid
+execution environment. Do not attempt to bypass license validation; use an
+institutional, student, or other authorized license.
 
-The last command should display the installed `xtserial.ado` path. If the
-Java error persists after the forced update, repair the Stata installation
-or contact Stata technical support before proceeding. If Stata reports a bad
-serial number, stop and resolve the license/activation issue through an
-authorized license provider or StataCorp. Do not edit the model or bypass the
-diagnostic to obtain a green completion message.
+The previous `Java installation not found` / r(5004) error occurred while
+Stata attempted to contact the external Stata Journal package server. The
+updated workflow no longer makes that network request, so this particular
+Java/package-installation failure is no longer on the execution path. This
+does not repair or validate Stata's license.
 
-From the repository root, run the analysis:
+From the repository root, run:
 
 ```stata
 do replication/run_analysis.do
 ```
 
-The do-file imports the committed workbook, validates the 76-observation
-four-country annual panel, reconstructs the log variables, estimates the
-historical specifications, and regenerates the processed dataset, tables,
-figures, and execution log.
-
-A successful run should end with:
-
-```text
-Analysis completed successfully.
-```
-
-If the script reports warnings, inspect
-`outputs/logs/nordic_panel_analysis.log`. In particular, the Hausman test and
-the availability of `xtserial` must be checked. A run with skipped diagnostics
-is not a fully successful reproduction.
-
 ## Current committed artifacts and clean-run acceptance
 
 The current repository commits the processed dataset, four tables, and three
 series figures as historical reference artifacts. The residuals-versus-fitted
-figure (`outputs/figures/fe_residuals_vs_fitted.png`) and the complete execution
+figure (`outputs/figures/fe_residuals_vs_fitted.png`), Wooldridge test report
+(`outputs/tables/wooldridge_serial_correlation_test.txt`), and complete execution
 log (`outputs/logs/nordic_panel_analysis.log`) are generated by the do-file but
 are not yet committed. Their absence from the current Git tree is explicit; a
 static GitHub Actions pass does not mean they have been generated.
 
-The do-file now checks for all ten expected output files at the end of execution.
+The do-file now checks for all eleven expected output files at the end of execution.
 It reports `Analysis completed successfully.` only if the Hausman test and
-`xtserial` diagnostic completed without a reported error and every expected
+native Wooldridge diagnostic completed without a reported error and every expected
 output file exists. A run that reports warnings is not accepted as a clean
 reproduction.
 
@@ -103,9 +86,9 @@ For the final local acceptance test:
 2. Run `do replication/run_analysis.do`.
 3. Confirm the final message is exactly `Analysis completed successfully.`
    and that no warning message appears.
-4. Confirm that all ten output paths listed in the do-file exist.
+4. Confirm that all eleven output paths listed in the do-file exist.
 5. Review the main log for successful workbook import, 76 observations,
-   completed model estimation, the Hausman result, and the `xtserial` result.
+   completed model estimation, the Hausman result, and the native Wooldridge-test result.
 6. Compare regenerated tables and the processed dataset with the committed
    reference artifacts. Investigate any substantive differences before
    replacing the reference files.
