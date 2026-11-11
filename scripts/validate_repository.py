@@ -91,8 +91,10 @@ def main():
             errors.append("Do-file must validate that all generated output files exist.")
         if "xtserial is not installed; the serial-correlation test was not run." not in do_file:
             errors.append("Do-file must explicitly report when xtserial is unavailable.")
-        if "net install st0039" not in do_file:
-            errors.append("Do-file must print the documented xtserial installation command.")
+        if "net install st0039" in do_file or "update all, force" in do_file:
+            errors.append("Do-file must not install packages or update Stata automatically.")
+        if "validly licensed, activated installation" not in do_file:
+            errors.append("Do-file must direct users to verify Stata licensing before dependency troubleshooting.")
         if 'from("http://www.stata-journal.com/software/sj3-2/")' in do_file:
             errors.append("Do-file must not use the obsolete HTTP package installer.")
         if "capture noisily xtserial lngdp lnl lna lnp" not in do_file:
@@ -104,6 +106,10 @@ def main():
             errors.append("Guide must distinguish static CI from actual Stata execution.")
         if "update all, force" not in docs:
             errors.append("Guide must document Stata's Java repair command.")
+        if "bad serial number" not in docs or "Do not run this update" not in docs:
+            errors.append("Guide must distinguish license-validation errors from Java errors.")
+        if "valid Stata license" not in docs:
+            errors.append("Guide must require a valid Stata license for full statistical reproduction.")
         if "net install st0039" not in docs:
             errors.append("Guide must document the Stata Journal dependency installation.")
         if "fe_residuals_vs_fitted.png" not in docs or "nordic_panel_analysis.log" not in docs:

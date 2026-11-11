@@ -96,15 +96,24 @@ outputs exist before reporting a successful run.
 
 ## Requirements
 
-- Stata 15.1 or later
+- Stata 15.1 or later, installed and activated under a valid Stata license
 - The community-contributed `xtserial` command (Stata Journal package `st0039`)
 
-Install `xtserial` once before running the analysis. If Stata reports
-`Java installation not found` during network installation, run
-`update all, force`, restart Stata, and then install the package using the
-commands below. The analysis do-file does not attempt to repair or update
-Stata's machine-specific Java/network components. A Python-style
-`requirements.txt` is not needed.
+Stata is proprietary software. Full statistical reproduction requires a
+genuine, properly licensed and activated Stata installation. A modified or
+unlicensed installation that reports a bad serial number or another license
+validation error is not a valid execution environment; this is not a defect in
+the repository or its econometric code. Do not attempt to bypass license
+validation. Use an institutional, student, or other authorized license.
+
+Install `xtserial` once before running the analysis. If a properly licensed
+Stata installation reports `Java installation not found`, StataCorp documents
+`update all, force` as a possible repair. Use that command only after Stata
+license activation is working. See
+[`docs/REPRODUCIBILITY.md`](docs/REPRODUCIBILITY.md) for the conditional
+repair and dependency-installation steps. The analysis do-file does not update
+Stata or install packages automatically. A Python-style `requirements.txt`
+is not needed.
 
 ## Reproduction
 
@@ -116,13 +125,12 @@ cd "C:\path\to\nordic-gdp-health-panel-Stata"
 do replication/run_analysis.do
 ```
 
-Before the first run, install the required diagnostic dependency in Stata:
-
-```stata
-update all, force
-```
-
-Restart Stata if the update reports that components were updated. Then run:
+Before the first run, confirm that Stata is properly licensed and activated.
+Do not run software updates to work around a serial-number or license error.
+Only if a properly licensed installation reports `Java installation not found`,
+follow StataCorp's conditional repair instruction (`update all, force`) in
+the reproducibility guide. Restart Stata if an update completes. Then install
+the dependency:
 
 ```stata
 net from https://www.stata-journal.com/software

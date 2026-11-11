@@ -17,22 +17,33 @@ results, or establish that the econometric analysis has been reproduced.
 
 ### 2. Full statistical reproduction
 
-Full reproduction requires Stata 15.1 or later and the community-contributed
-`xtserial` command for the Wooldridge serial-correlation test. Install this
-dependency once before running the analysis. The Stata Journal identifies
-`xtserial` as package `st0039` in issue `sj3-2`.
+Full reproduction requires Stata 15.1 or later, installed and activated under
+a valid Stata license, and the community-contributed `xtserial` command for
+the Wooldridge serial-correlation test. Stata is proprietary software. A
+modified or unlicensed installation that reports a bad serial number or other
+license-validation error is not a valid execution environment and cannot be
+used to establish successful replication. Such an error is not evidence of a
+problem in this repository, its data, or its econometric specification. Do not
+attempt to bypass license validation; use an institutional, student, or other
+authorized Stata license.
 
-If Stata displays `Java installation not found` or returns r(5004) while
-accessing the Stata Journal package index, this is a Stata installation/network
-component problem, not a failure in the econometric model. StataCorp's
-documented first remedy for `Java installation not found` is:
+Install `xtserial` once before running the analysis. The Stata Journal
+identifies `xtserial` as package `st0039` in issue `sj3-2`.
+
+If, and only if, Stata is properly licensed and activated but displays
+`Java installation not found` or returns r(5004) while accessing the Stata
+Journal package index, this is a Stata installation/network component problem,
+not a failure in the econometric model. StataCorp documents the following
+repair for that Java error:
 
 ```stata
 update all, force
 ```
 
-Allow the update to finish, close and restart Stata, and then install the
-dependency:
+Do not run this update in an installation that is reporting a bad serial
+number or other license-validation failure. For a validly licensed
+installation, allow the update to finish, close and restart Stata, and then
+install the dependency:
 
 ```stata
 net from https://www.stata-journal.com/software
@@ -44,8 +55,10 @@ which xtserial
 
 The last command should display the installed `xtserial.ado` path. If the
 Java error persists after the forced update, repair the Stata installation
-or contact Stata technical support before proceeding. Do not edit the model
-or bypass the diagnostic to obtain a green completion message.
+or contact Stata technical support before proceeding. If Stata reports a bad
+serial number, stop and resolve the license/activation issue through an
+authorized license provider or StataCorp. Do not edit the model or bypass the
+diagnostic to obtain a green completion message.
 
 From the repository root, run the analysis:
 

@@ -204,12 +204,10 @@ install st0039, and rerun this do-file.
 capture which xtserial
 if _rc {
     display as error "xtserial is not installed; the serial-correlation test was not run."
-    display as error "Repair Stata's Java installation if needed: update all, force"
-    display as error "Restart Stata, then run:"
-    display as error "net from https://www.stata-journal.com/software"
-    display as error "net cd sj3-2"
-    display as error "net install st0039"
-    display as error "Then rerun: do replication/run_analysis.do"
+    display as error "Check that Stata is a validly licensed, activated installation."
+    display as error "If Stata reports a Java/network error, follow the conditional repair instructions in:"
+    display as error "docs/REPRODUCIBILITY.md"
+    display as error "After installing xtserial, rerun: do replication/run_analysis.do"
     local warning_count = `warning_count' + 1
 }
 else {
