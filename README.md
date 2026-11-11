@@ -60,7 +60,7 @@ The single Stata script performs:
 ## Repository Structure
 
 ```text
-nordic-gdp-health-panel-stata/
+nordic-gdp-health-panel-Stata/
 ├── README.md
 ├── LICENSE
 ├── .gitignore
@@ -89,10 +89,11 @@ nordic-gdp-health-panel-stata/
 ```
 
 The tree above shows the files currently committed. A clean Stata run also
-creates `outputs/figures/fe_residuals_vs_fitted.png` and
-`outputs/logs/nordic_panel_analysis.log`; these two run-generated artifacts are
-not yet committed as reference outputs. The do-file checks that all expected
-outputs exist before reporting a successful run.
+creates `outputs/figures/fe_residuals_vs_fitted.png`,
+`outputs/tables/wooldridge_serial_correlation_test.txt`, and
+`outputs/logs/nordic_panel_analysis.log`. These three run-generated artifacts
+are not yet committed as reference outputs. The do-file checks that all
+expected outputs exist before reporting a successful run.
 
 ## Requirements
 
@@ -114,13 +115,20 @@ institutional, student, or other authorized license.
 A Python-style `requirements.txt` is not needed. See
 [`docs/REPRODUCIBILITY.md`](docs/REPRODUCIBILITY.md) for the test procedure
 and its small-panel inference limitation.
+
 ## Reproduction
 
 Download or clone the repository, open Stata, and set the working directory to
 the repository root. On Windows:
 
+```powershell
+git clone https://github.com/aliye-nezhad/nordic-gdp-health-panel-Stata.git
+cd nordic-gdp-health-panel-Stata
+```
+
+Then open Stata, set the working directory to this repository folder, and run:
+
 ```stata
-cd "C:\path\to\nordic-gdp-health-panel-Stata"
 do replication/run_analysis.do
 ```
 
@@ -137,8 +145,8 @@ Wooldridge/Drukker procedure using built-in Stata commands and writes its
 results to `outputs/tables/wooldridge_serial_correlation_test.txt`.
 
 The script expects `data/raw/nordic_gdp_health_panel_2000_2018.xlsx` and recreates the documented
-tables, figures, processed dataset, and log. It checks the expected output files
-at the end and reports success only when no diagnostic or output-validation
+tables, figures, processed dataset, and log. It checks all eleven expected
+output files and reports success only when no diagnostic or output-validation
 warnings remain. The do-file is stored in `replication/`, not in the repository root.
 
 A lightweight GitHub Actions check validates repository structure, required
