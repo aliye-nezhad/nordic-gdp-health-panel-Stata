@@ -4,10 +4,10 @@
 
 | File | Status | Purpose |
 | --- | --- | --- |
-| `raw/nordic_gdp_health_panel_2000_2018.xlsx` | Historical input | Original workbook used by `run_analysis.do` |
-| `processed/nordic_gdp_health_panel_2000_2018.dta` | Generated output | Analysis-ready panel created by `run_analysis.do` |
+| `raw/nordic_gdp_health_panel_2000_2018.xlsx` | Historical input | Original workbook used by `replication/run_analysis.do` |
+| `processed/nordic_gdp_health_panel_2000_2018.dta` | Generated output | Analysis-ready panel created by `replication/run_analysis.do` |
 
-`run_analysis.do` imports cells `A2:H77` from `Sheet1`. It does not use the
+`replication/run_analysis.do` imports cells `A2:H77` from `Sheet1`. It does not use the
 formula-generated copies in columns J:Q because the logarithms are recreated in
 Stata.
 
@@ -45,5 +45,5 @@ Specifications including the population variable should therefore be interpreted
 
 ## Reproducibility
 
-The raw workbook is not overwritten. Running `run_analysis.do` from the repository
+The raw workbook is not overwritten. Running `replication/run_analysis.do` from the repository
 root regenerates `processed/nordic_gdp_health_panel_2000_2018.dta` and every file under `outputs/`.
