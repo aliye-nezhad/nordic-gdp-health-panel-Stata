@@ -31,8 +31,9 @@ The implementation:
 1. Regresses first differences of `lngdp`, `lnl`, `lna`, and `lnp` without
    a constant, using standard errors clustered by `country_id`.
 2. Predicts residuals from that first-difference regression.
-3. Regresses those residuals on their one-period lags, without a constant,
-   again clustering by `country_id`.
+3. Regresses the first differences of the original variables on their first
+   differences and the one-period lag of the first-difference residuals,
+   without a constant, again clustering by `country_id`.
 4. Tests the null restriction that the lagged-residual coefficient equals
    -0.5.
 
