@@ -25,7 +25,6 @@ COMMITTED_REFERENCE_OUTPUTS = [
     "outputs/tables/correlation_matrix.txt",
     "outputs/tables/hausman_test.txt",
     "outputs/tables/model_comparison.txt",
-    "outputs/tables/wooldridge_serial_correlation_test.txt",
     "outputs/figures/log_gdp_by_country.png",
     "outputs/figures/life_expectancy_by_country.png",
     "outputs/figures/age_dependency_by_country.png",
@@ -37,6 +36,7 @@ EXPECTED_GENERATED_OUTPUTS = [
     "outputs/tables/correlation_matrix.txt",
     "outputs/tables/hausman_test.txt",
     "outputs/tables/model_comparison.txt",
+    "outputs/tables/wooldridge_serial_correlation_test.txt",
     "outputs/figures/log_gdp_by_country.png",
     "outputs/figures/life_expectancy_by_country.png",
     "outputs/figures/age_dependency_by_country.png",
@@ -111,7 +111,7 @@ def main():
             errors.append("Guide must distinguish static CI from actual Stata execution.")
         if "No user-written ado packages" not in docs:
             errors.append("Guide must state that the analysis has no user-written ado dependency.")
-        if "equal to -0.5" not in docs:
+        if "equals" not in docs or "-0.5" not in docs:
             errors.append("Guide must document the Wooldridge test null restriction.")
         if "four clusters" not in docs:
             errors.append("Guide must disclose the small-cluster inference limitation.")
