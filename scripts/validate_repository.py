@@ -46,17 +46,14 @@ def main():
 
     if do_path.exists():
         do_file = do_path.read_text(encoding="utf-8")
-        if not re.search(r"(?m)^version\\s+15\\.1\\s*$", do_file):
+        if not re.search(r"(?m)^version\s+15\.1\s*$", do_file):
             errors.append("Do-file must declare its minimum Stata version (15.1).")
         if 'local data_file "data/raw/nordic_gdp_health_panel_2000_2018.xlsx"' not in do_file:
             errors.append("Do-file input path does not match the committed raw workbook.")
         if "do replication/run_analysis.do" not in do_file:
             errors.append("Do-file header must show the correct repository-root invocation.")
         for output in EXPECTED_OUTPUTS:
-            if output not in do_file and output not in {
-                "data/processed/nordic_gdp_health_panel_2000_2018.dta",
-                "outputs/logs/nordic_panel_analysis.log",
-            }:
+            if output not in do_file:
                 errors.append(f"Expected output path is not declared in the do-file: {output}")
 
     if errors:
