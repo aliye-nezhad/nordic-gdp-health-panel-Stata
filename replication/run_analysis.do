@@ -191,34 +191,81 @@ if `hausman_rc' != 0 {
 /*******************************************************************************
 9. Wooldridge serial-correlation test
 
-xtserial is the community-contributed Stata Journal package st0039.
-Dependency installation is deliberately kept outside the analysis run:
-Stata's network/Java setup is machine-specific and must not be silently
-modified by a replication do-file.
+Native Stata implementation of the Wooldridge/Drukker test. This follows the
+published xtserial procedure using built-in regress, predict, and test
+commands. No user-written ado package, Java component, or network download
+is required.
 
-If xtserial is unavailable, follow the setup instructions in README.md or
-docs/REPRODUCIBILITY.md, restart Stata if its Java installation was repaired,
-install st0039, and rerun this do-file.
+Procedure:
+1. Regress first differences of the dependent and explanatory variables,
+   without a constant, using panel-clustered standard errors.
+2. Predict residuals from that first-difference regression.
+3. Regress those residuals on their one-period lags, without a constant,
+   again clustering by panel.
+4. Test whether the lagged-residual coefficient equals -0.5.
+
+Reference: Drukker (2003), Stata Journal 3(2), 168-177.
 *******************************************************************************/
 
-capture which xtserial
-if _rc {
-    display as error "xtserial is not installed; the serial-correlation test was not run."
-    display as error "Check that Stata is a validly licensed, activated installation."
-    display as error "If Stata reports a Java/network error, follow the conditional repair instructions in:"
-    display as error "docs/REPRODUCIBILITY.md"
-    display as error "After installing xtserial, rerun: do replication/run_analysis.do"
+log using "outputs/tables/wooldridge_serial_correlation_test.txt", ///
+    replace text name(wooldridge_log)
+
+capture drop _wooldridge_resid
+capture quietly regress D.(lngdp lnl lna lnp), ///
+    noconstant vce(cluster country_id)
+local wooldridge_rc = _rc
+
+if `wooldridge_rc' != 0 {
+    display as error "Wooldridge test failed in the first-difference regression; return code `wooldridge_rc'."
     local warning_count = `warning_count' + 1
 }
 else {
-    capture noisily xtserial lngdp lnl lna lnp
-    local xtserial_rc = _rc
-    if `xtserial_rc' != 0 {
-        display as error "xtserial failed with return code `xtserial_rc'."
+    capture quietly predict double _wooldridge_resid if e(sample), residuals
+    local wooldridge_rc = _rc
+
+    if `wooldridge_rc' != 0 {
+        display as error "Wooldridge test could not generate first-difference residuals; return code `wooldridge_rc'."
         local warning_count = `warning_count' + 1
+    }
+    else {
+        capture quietly regress _wooldridge_resid L._wooldridge_resid, ///
+            noconstant vce(cluster country_id)
+        local wooldridge_rc = _rc
+
+        if `wooldridge_rc' != 0 {
+            display as error "Wooldridge test failed in the residual regression; return code `wooldridge_rc'."
+            local warning_count = `warning_count' + 1
+        }
+        else {
+            capture quietly test L._wooldridge_resid = -0.5
+            local wooldridge_rc = _rc
+
+            if `wooldridge_rc' != 0 {
+                display as error "Wooldridge test restriction could not be evaluated; return code `wooldridge_rc'."
+                local warning_count = `warning_count' + 1
+            }
+            else {
+                local wooldridge_rho = _b[L._wooldridge_resid]
+                local wooldridge_F = r(F)
+                local wooldridge_df = r(df)
+                local wooldridge_df_r = r(df_r)
+                local wooldridge_p = r(p)
+
+                display as text "Wooldridge test for autocorrelation in panel data"
+                display as text "H0: no first-order autocorrelation"
+                display as text "Coefficient on lagged first-difference residuals = " ///
+                    as result %9.4f `wooldridge_rho'
+                display as text "F(" %3.0f `wooldridge_df' ", " ///
+                    %8.0f `wooldridge_df_r' ") = " ///
+                    as result %10.3f `wooldridge_F'
+                display as text "Prob > F = " as result %11.4f `wooldridge_p'
+            }
+        }
     }
 }
 
+capture drop _wooldridge_resid
+log close wooldridge_log
 /*******************************************************************************
 10. Historical AR(1) and FGLS specifications
 *******************************************************************************/
@@ -288,7 +335,7 @@ graph export "outputs/figures/fe_residuals_vs_fitted.png", replace width(2000)
 This is an execution check only. It does not alter the model or estimates.
 *******************************************************************************/
 
-local expected_outputs "data/processed/nordic_gdp_health_panel_2000_2018.dta outputs/tables/descriptive_statistics.txt outputs/tables/correlation_matrix.txt outputs/tables/hausman_test.txt outputs/tables/model_comparison.txt outputs/figures/log_gdp_by_country.png outputs/figures/life_expectancy_by_country.png outputs/figures/age_dependency_by_country.png outputs/figures/fe_residuals_vs_fitted.png outputs/logs/nordic_panel_analysis.log"
+local expected_outputs "data/processed/nordic_gdp_health_panel_2000_2018.dta outputs/tables/descriptive_statistics.txt outputs/tables/correlation_matrix.txt outputs/tables/hausman_test.txt outputs/tables/model_comparison.txt outputs/tables/wooldridge_serial_correlation_test.txt outputs/figures/log_gdp_by_country.png outputs/figures/life_expectancy_by_country.png outputs/figures/age_dependency_by_country.png outputs/figures/fe_residuals_vs_fitted.png outputs/logs/nordic_panel_analysis.log"
 
 foreach output of local expected_outputs {
     capture confirm file "`output'"
