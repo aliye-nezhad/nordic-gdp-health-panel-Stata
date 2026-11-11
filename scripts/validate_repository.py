@@ -25,6 +25,7 @@ COMMITTED_REFERENCE_OUTPUTS = [
     "outputs/tables/correlation_matrix.txt",
     "outputs/tables/hausman_test.txt",
     "outputs/tables/model_comparison.txt",
+    "outputs/tables/wooldridge_serial_correlation_test.txt",
     "outputs/figures/log_gdp_by_country.png",
     "outputs/figures/life_expectancy_by_country.png",
     "outputs/figures/age_dependency_by_country.png",
@@ -89,29 +90,33 @@ def main():
                 errors.append(f"Expected output path is not declared in the do-file: {output}")
         if "Required output missing:" not in do_file:
             errors.append("Do-file must validate that all generated output files exist.")
-        if "xtserial is not installed; the serial-correlation test was not run." not in do_file:
-            errors.append("Do-file must explicitly report when xtserial is unavailable.")
-        if "net install st0039" in do_file or "update all, force" in do_file:
-            errors.append("Do-file must not install packages or update Stata automatically.")
-        if "validly licensed, activated installation" not in do_file:
-            errors.append("Do-file must direct users to verify Stata licensing before dependency troubleshooting.")
-        if 'from("http://www.stata-journal.com/software/sj3-2/")' in do_file:
-            errors.append("Do-file must not use the obsolete HTTP package installer.")
-        if "capture noisily xtserial lngdp lnl lna lnp" not in do_file:
-            errors.append("Do-file must capture xtserial failures and report them as warnings.")
+        if "regress D.(lngdp lnl lna lnp)" not in do_file:
+            errors.append("Do-file must implement the first-difference regression for the Wooldridge test.")
+        if "predict double _wooldridge_resid if e(sample), residuals" not in do_file:
+            errors.append("Do-file must predict residuals from the first-difference regression.")
+        if "regress _wooldridge_resid L._wooldridge_resid" not in do_file:
+            errors.append("Do-file must regress first-difference residuals on their panel-specific lags.")
+        if "test L._wooldridge_resid = -0.5" not in do_file:
+            errors.append("Do-file must test the Wooldridge null restriction that the lag coefficient equals -0.5.")
+        if "vce(cluster country_id)" not in do_file:
+            errors.append("Wooldridge regressions must retain country-clustered standard errors.")
+        if "outputs/tables/wooldridge_serial_correlation_test.txt" not in do_file:
+            errors.append("Do-file must export a separate Wooldridge diagnostic report.")
+        if "net install st0039" in do_file or "xtserial lngdp lnl lna lnp" in do_file:
+            errors.append("Do-file must not depend on external xtserial installation.")
 
     if docs_path.exists():
         docs = docs_path.read_text(encoding="utf-8")
         if "does **not** execute Stata" not in docs:
             errors.append("Guide must distinguish static CI from actual Stata execution.")
-        if "update all, force" not in docs:
-            errors.append("Guide must document Stata's Java repair command.")
-        if "bad serial number" not in docs or "Do not run this update" not in docs:
-            errors.append("Guide must distinguish license-validation errors from Java errors.")
+        if "No user-written ado packages" not in docs:
+            errors.append("Guide must state that the analysis has no user-written ado dependency.")
+        if "equal to -0.5" not in docs:
+            errors.append("Guide must document the Wooldridge test null restriction.")
+        if "four clusters" not in docs:
+            errors.append("Guide must disclose the small-cluster inference limitation.")
         if "valid Stata license" not in docs:
             errors.append("Guide must require a valid Stata license for full statistical reproduction.")
-        if "net install st0039" not in docs:
-            errors.append("Guide must document the Stata Journal dependency installation.")
         if "fe_residuals_vs_fitted.png" not in docs or "nordic_panel_analysis.log" not in docs:
             errors.append("Guide must list the residual figure and execution log.")
 
