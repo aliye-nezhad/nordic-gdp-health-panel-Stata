@@ -70,22 +70,29 @@ nordic-gdp-health-panel-stata/
 │   │   └── nordic_gdp_health_panel_2000_2018.xlsx
 │   └── processed/
 │       └── nordic_gdp_health_panel_2000_2018.dta
+├── docs/
+│   └── REPRODUCIBILITY.md
 ├── replication/
 │   └── run_analysis.do
+├── scripts/
+│   └── validate_repository.py
 └── outputs/
     ├── figures/
     │   ├── age_dependency_by_country.png
-    │   ├── fe_residuals_vs_fitted.png
     │   ├── life_expectancy_by_country.png
     │   └── log_gdp_by_country.png
-    ├── logs/
-    │   └── nordic_panel_analysis.log
     └── tables/
         ├── correlation_matrix.txt
         ├── descriptive_statistics.txt
         ├── hausman_test.txt
         └── model_comparison.txt
 ```
+
+The tree above shows the files currently committed. A clean Stata run also
+creates `outputs/figures/fe_residuals_vs_fitted.png` and
+`outputs/logs/nordic_panel_analysis.log`; these two run-generated artifacts are
+not yet committed as reference outputs. The do-file checks that all expected
+outputs exist before reporting a successful run.
 
 ## Requirements
 
@@ -107,8 +114,10 @@ do replication/run_analysis.do
 ```
 
 The script expects `data/raw/nordic_gdp_health_panel_2000_2018.xlsx` and recreates the documented
-tables, figures, dataset, and log. Run it using the path shown above; the do-file
-is stored in `replication/`, not in the repository root.
+tables, figures, processed dataset, and log. It checks the expected output files
+at the end and reports success only when no diagnostic or output-validation
+warnings remain. Run it using the path shown above; the do-file is stored in
+`replication/`, not in the repository root.
 
 A lightweight GitHub Actions check validates repository structure, required
 inputs, documented paths, and expected output names. It does **not** execute
@@ -120,8 +129,8 @@ see [`docs/REPRODUCIBILITY.md`](docs/REPRODUCIBILITY.md) for the distinction.
 | Location | Contents |
 | --- | --- |
 | `outputs/tables/` | Descriptive statistics, correlations, Hausman output, and model comparison |
-| `outputs/figures/` | GDP, life-expectancy, age-dependency, and residual diagnostics |
-| `outputs/logs/` | Complete Stata execution record |
+| `outputs/figures/` | Three committed series plots; the residual diagnostic is generated on each run |
+| `outputs/logs/` | Complete Stata execution record generated on each run; not currently committed |
 | `data/processed/nordic_gdp_health_panel_2000_2018.dta` | Analysis-ready panel with variables created by the script |
 
 ## Interpretation and Limitations
