@@ -11,16 +11,115 @@ permissions:
 
 jobs:
   static-validation:
-    name: Validate repository structure and instructions
+    name: Validate repository structure and Stata workflow
     runs-on: ubuntu-24.04
     steps:
       - name: Check out repository
         uses: actions/checkout@v5
 
-      - name: Set up Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: "3.12"
+      - name: Validate repository files and Stata instructions
+        shell: bash
+        run: |
+          set -euo pipefail
 
-      - name: Validate repository files and documented paths
-        run: python scripts/validate_repository.py
+          for path in \
+            README.md \
+            LICENSE \
+            .gitignore \
+            .gitattributes \
+            data/README.md \
+            data/raw/nordic_gdp_health_panel_2000_2018.xlsx \
+            data/processed/nordic_gdp_health_panel_2000_2018.dta \
+            replication/run_analysis.do \
+            docs/REPRODUCIBILITY.md; do
+            if [[ ! -s "$path" ]]; then
+              echo "::error::Missing or empty required file: $path"
+              exit 1
+            fi
+          done
+
+          for path in \
+            outputs/tables/descriptive_statistics.txt \
+            outputs/tables/correlation_matrix.txt \
+            outputs/tables/hausman_test.txt \
+            outputs/tables/model_comparison.txt \
+            outputs/figures/log_gdp_by_country.png \
+            outputs/figures/life_expectancy_by_country.png \
+            outputs/figures/age_dependency_by_country.png; do
+            if [[ ! -s "$path" ]]; then
+              echo "::error::Missing or empty committed reference output: $path"
+              exit 1
+            fi
+          done
+
+          tracked_python="$(git ls-files -- '*.py')"
+          if [[ -n "$tracked_python" ]]; then
+            echo "::error::Non-Stata source files are not permitted in this Stata-only repository:"
+            echo "$tracked_python"
+            exit 1
+          fi
+
+          grep -Fq "All executable" README.md
+          grep -Fq "written in Stata" README.md
+          grep -Fq "git clone https://github.com/aliye-nezhad/nordic-gdp-health-panel-Stata.git" README.md
+          grep -Fq "nordic-gdp-health-panel-Stata/" README.md
+          grep -Fq "do replication/run_analysis.do" README.md
+          grep -Fq "docs/REPRODUCIBILITY.md" README.md
+          grep -Fq "not yet committed as reference outputs" README.md
+
+          if grep -Fq "do run_analysis.do" README.md; then
+            echo "::error::README contains an obsolete root-level do-file command."
+            exit 1
+          fi
+
+          grep -Fq "version 15.1" replication/run_analysis.do
+          grep -Fq 'local data_file "data/raw/nordic_gdp_health_panel_2000_2018.xlsx"' replication/run_analysis.do
+          grep -Fq "do replication/run_analysis.do" replication/run_analysis.do
+
+          for path in \
+            data/processed/nordic_gdp_health_panel_2000_2018.dta \
+            outputs/tables/descriptive_statistics.txt \
+            outputs/tables/correlation_matrix.txt \
+            outputs/tables/hausman_test.txt \
+            outputs/tables/model_comparison.txt \
+            outputs/tables/wooldridge_serial_correlation_test.txt \
+            outputs/figures/log_gdp_by_country.png \
+            outputs/figures/life_expectancy_by_country.png \
+            outputs/figures/age_dependency_by_country.png \
+            outputs/figures/fe_residuals_vs_fitted.png \
+            outputs/logs/nordic_panel_analysis.log; do
+            grep -Fq "$path" replication/run_analysis.do
+          done
+
+          grep -Fq "Required output missing:" replication/run_analysis.do
+          grep -Fq "regress D.(lngdp lnl lna lnp)" replication/run_analysis.do
+          grep -Fq "predict double _wooldridge_resid if e(sample), residuals" replication/run_analysis.do
+          grep -Fq "regress _wooldridge_resid L._wooldridge_resid" replication/run_analysis.do
+          grep -Fq "test L._wooldridge_resid = -0.5" replication/run_analysis.do
+          grep -Fq "vce(cluster country_id)" replication/run_analysis.do
+          grep -Fq "outputs/tables/wooldridge_serial_correlation_test.txt" replication/run_analysis.do
+
+          if grep -Fq "regress D.(lngdp lnl lna lnp) L._wooldridge_resid" replication/run_analysis.do; then
+            echo "::error::The obsolete Wooldridge auxiliary regression is still present."
+            exit 1
+          fi
+
+          if grep -Fq "net install st0039" replication/run_analysis.do || \
+             grep -Fq "xtserial lngdp lnl lna lnp" replication/run_analysis.do; then
+            echo "::error::The Stata workflow must not depend on external xtserial installation."
+            exit 1
+          fi
+
+          grep -Fq "does **not** execute Stata" docs/REPRODUCIBILITY.md
+          grep -Fq "No user-written ado packages" docs/REPRODUCIBILITY.md
+          grep -Fq "equals" docs/REPRODUCIBILITY.md
+          grep -Fq -- "-0.5" docs/REPRODUCIBILITY.md
+          grep -Fq "four country clusters" docs/REPRODUCIBILITY.md
+          grep -Fq "valid Stata license" docs/REPRODUCIBILITY.md
+          grep -Fq "fe_residuals_vs_fitted.png" docs/REPRODUCIBILITY.md
+          grep -Fq "nordic_panel_analysis.log" docs/REPRODUCIBILITY.md
+
+          echo "STATIC REPOSITORY VALIDATION PASSED"
+          echo "Stata source files are the only tracked analysis code."
+          echo "Required inputs, reference outputs, instructions, and expected output paths are present."
+          echo "Note: this check does not execute Stata or verify numerical estimates."

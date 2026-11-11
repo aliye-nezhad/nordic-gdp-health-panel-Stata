@@ -7,10 +7,13 @@ of the empirical analysis. They are not interchangeable.
 
 ### 1. Automated static validation
 
-GitHub Actions runs `scripts/validate_repository.py`. It checks that required
-source files and the raw workbook are present, that the README gives the correct
-repository-root command, that the do-file declares its Stata version and input
-path, and that expected generated artifacts are represented in the workflow.
+The GitHub Actions workflow at `.github/workflows/reproducibility.yml` performs
+shell-based static checks. It verifies required source files and historical
+reference outputs, the repository-root command and canonical repository name,
+the Stata version declaration and input path, all expected generated-output
+paths, and key elements of the native Wooldridge diagnostic. It also rejects
+tracked Python source files so that the repository remains a Stata-only coding
+sample.
 
 This check does **not** execute Stata, estimate models, validate numerical
 results, or establish that the econometric analysis has been reproduced.
@@ -31,16 +34,17 @@ The implementation:
 1. Regresses first differences of `lngdp`, `lnl`, `lna`, and `lnp` without
    a constant, using standard errors clustered by `country_id`.
 2. Predicts residuals from that first-difference regression.
-3. Regresses the first differences of the original variables on their first
-   differences and the one-period lag of the first-difference residuals,
-   without a constant, again clustering by `country_id`.
+3. Regresses the first-difference residuals on their one-period lags, without
+   a constant, again clustering by `country_id`.
 4. Tests the null restriction that the lagged-residual coefficient equals
    -0.5.
 
-Results are written to
-`outputs/tables/wooldridge_serial_correlation_test.txt` and the main log.
-This is the published Wooldridge/Drukker procedure, not a substitute
-diagnostic or a change to the substantive economic model.
+The auxiliary regression is implemented as
+`regress _wooldridge_resid L._wooldridge_resid, noconstant vce(cluster country_id)`,
+followed by a test of the lag coefficient against -0.5. Results are written to
+`outputs/tables/wooldridge_serial_correlation_test.txt` and the main log. This
+is the published Wooldridge/Drukker procedure, not a substitute diagnostic or a
+change to the substantive economic model.
 
 **Small-panel inference limitation:** there are only four country clusters.
 Conventional cluster-robust inference with four clusters can be unreliable;
@@ -93,8 +97,8 @@ For the final local acceptance test:
 6. Compare regenerated tables and the processed dataset with the committed
    reference artifacts. Investigate any substantive differences before
    replacing the reference files.
-7. If the run is clean, commit the generated residual figure and execution log
-   so the repository contains the full output set.
+7. If the run is clean, commit the generated residual figure, Wooldridge test
+   report, and execution log so the repository contains the full output set.
 
 Log files can contain machine-specific paths and timestamps, so byte-for-byte
 identity is not expected for logs. Compare their substantive execution record

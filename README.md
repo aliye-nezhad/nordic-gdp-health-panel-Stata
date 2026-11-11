@@ -7,9 +7,10 @@ Norway, Sweden, Finland, and Denmark from 2000 through 2018. It examines
 conditional associations between gross domestic product, life expectancy, age
 dependency, and population.
 
-The project is presented as a Stata and panel-data coding sample. It is not a
-causal research design, and the estimates should not be interpreted as causal
-effects.
+The project is presented as a Stata and panel-data coding sample. All executable
+analysis and data-processing code in this repository is written in Stata. It is
+not a causal research design, and the estimates should not be interpreted as
+causal effects.
 
 ## Research Question
 
@@ -64,6 +65,7 @@ nordic-gdp-health-panel-Stata/
 ├── README.md
 ├── LICENSE
 ├── .gitignore
+├── .gitattributes
 ├── data/
 │   ├── README.md
 │   ├── raw/
@@ -74,8 +76,6 @@ nordic-gdp-health-panel-Stata/
 │   └── REPRODUCIBILITY.md
 ├── replication/
 │   └── run_analysis.do
-├── scripts/
-│   └── validate_repository.py
 └── outputs/
     ├── figures/
     │   ├── age_dependency_by_country.png
@@ -112,8 +112,7 @@ unlicensed installation that reports a bad serial number is not a valid
 execution environment. Do not attempt to bypass license validation; use an
 institutional, student, or other authorized license.
 
-A Python-style `requirements.txt` is not needed. See
-[`docs/REPRODUCIBILITY.md`](docs/REPRODUCIBILITY.md) for the test procedure
+See [`docs/REPRODUCIBILITY.md`](docs/REPRODUCIBILITY.md) for the test procedure
 and its small-panel inference limitation.
 
 ## Reproduction
@@ -149,10 +148,11 @@ tables, figures, processed dataset, and log. It checks all eleven expected
 output files and reports success only when no diagnostic or output-validation
 warnings remain. The do-file is stored in `replication/`, not in the repository root.
 
-A lightweight GitHub Actions check validates repository structure, required
-inputs, documented paths, and expected output names. It does **not** execute
-Stata. Actual statistical replication requires a licensed Stata installation;
-see [`docs/REPRODUCIBILITY.md`](docs/REPRODUCIBILITY.md) for the distinction.
+The GitHub Actions workflow performs shell-based static checks of repository
+structure, required inputs, documented paths, and expected output names. It does
+**not** execute Stata. Actual statistical replication requires a licensed Stata
+installation; see [`docs/REPRODUCIBILITY.md`](docs/REPRODUCIBILITY.md) for the
+distinction.
 
 ## Output Guide
 
