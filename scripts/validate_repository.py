@@ -89,6 +89,12 @@ def main():
                 errors.append(f"Expected output path is not declared in the do-file: {output}")
         if "Required output missing:" not in do_file:
             errors.append("Do-file must validate that all generated output files exist.")
+        if "xtserial is not installed; the serial-correlation test was not run." not in do_file:
+            errors.append("Do-file must explicitly report when xtserial is unavailable.")
+        if "net install st0039" not in do_file:
+            errors.append("Do-file must print the documented xtserial installation command.")
+        if 'from("http://www.stata-journal.com/software/sj3-2/")' in do_file:
+            errors.append("Do-file must not use the obsolete HTTP package installer.")
         if "capture noisily xtserial lngdp lnl lna lnp" not in do_file:
             errors.append("Do-file must capture xtserial failures and report them as warnings.")
 
@@ -96,6 +102,10 @@ def main():
         docs = docs_path.read_text(encoding="utf-8")
         if "does **not** execute Stata" not in docs:
             errors.append("Guide must distinguish static CI from actual Stata execution.")
+        if "update all, force" not in docs:
+            errors.append("Guide must document Stata's Java repair command.")
+        if "net install st0039" not in docs:
+            errors.append("Guide must document the Stata Journal dependency installation.")
         if "fe_residuals_vs_fitted.png" not in docs or "nordic_panel_analysis.log" not in docs:
             errors.append("Guide must list the residual figure and execution log.")
 

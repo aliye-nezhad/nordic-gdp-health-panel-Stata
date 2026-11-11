@@ -191,21 +191,25 @@ if `hausman_rc' != 0 {
 /*******************************************************************************
 9. Wooldridge serial-correlation test
 
-xtserial is provided by Stata Journal package st0039. The script attempts a
-first-run installation if the command is missing.
+xtserial is the community-contributed Stata Journal package st0039.
+Dependency installation is deliberately kept outside the analysis run:
+Stata's network/Java setup is machine-specific and must not be silently
+modified by a replication do-file.
+
+If xtserial is unavailable, follow the setup instructions in README.md or
+docs/REPRODUCIBILITY.md, restart Stata if its Java installation was repaired,
+install st0039, and rerun this do-file.
 *******************************************************************************/
 
 capture which xtserial
 if _rc {
-    display as text "Installing the community-contributed xtserial command..."
-    capture noisily net install st0039, ///
-        from("http://www.stata-journal.com/software/sj3-2/")
-}
-
-capture which xtserial
-if _rc {
-    display as error "xtserial is unavailable; the serial-correlation test was not run."
-    display as error "In Stata, type: search xtserial"
+    display as error "xtserial is not installed; the serial-correlation test was not run."
+    display as error "Repair Stata's Java installation if needed: update all, force"
+    display as error "Restart Stata, then run:"
+    display as error "net from https://www.stata-journal.com/software"
+    display as error "net cd sj3-2"
+    display as error "net install st0039"
+    display as error "Then rerun: do replication/run_analysis.do"
     local warning_count = `warning_count' + 1
 }
 else {
