@@ -18,10 +18,36 @@ results, or establish that the econometric analysis has been reproduced.
 ### 2. Full statistical reproduction
 
 Full reproduction requires Stata 15.1 or later and the community-contributed
-`xtserial` command for the Wooldridge serial-correlation test. The first run
-may need internet access to install `xtserial`.
+`xtserial` command for the Wooldridge serial-correlation test. Install this
+dependency once before running the analysis. The Stata Journal identifies
+`xtserial` as package `st0039` in issue `sj3-2`.
 
-From the repository root, open Stata and run:
+If Stata displays `Java installation not found` or returns r(5004) while
+accessing the Stata Journal package index, this is a Stata installation/network
+component problem, not a failure in the econometric model. StataCorp's
+documented first remedy for `Java installation not found` is:
+
+```stata
+update all, force
+```
+
+Allow the update to finish, close and restart Stata, and then install the
+dependency:
+
+```stata
+net from https://www.stata-journal.com/software
+net cd sj3-2
+net describe st0039
+net install st0039
+which xtserial
+```
+
+The last command should display the installed `xtserial.ado` path. If the
+Java error persists after the forced update, repair the Stata installation
+or contact Stata technical support before proceeding. Do not edit the model
+or bypass the diagnostic to obtain a green completion message.
+
+From the repository root, run the analysis:
 
 ```stata
 do replication/run_analysis.do
