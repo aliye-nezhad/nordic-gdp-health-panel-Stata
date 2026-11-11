@@ -94,8 +94,8 @@ def main():
             errors.append("Do-file must implement the first-difference regression for the Wooldridge test.")
         if "predict double _wooldridge_resid if e(sample), residuals" not in do_file:
             errors.append("Do-file must predict residuals from the first-difference regression.")
-        if "regress _wooldridge_resid L._wooldridge_resid" not in do_file:
-            errors.append("Do-file must regress first-difference residuals on their panel-specific lags.")
+        if "regress D.(lngdp lnl lna lnp) L._wooldridge_resid" not in do_file:
+            errors.append("Do-file must include the lagged first-difference residual in the Wooldridge auxiliary regression.")
         if "test L._wooldridge_resid = -0.5" not in do_file:
             errors.append("Do-file must test the Wooldridge null restriction that the lag coefficient equals -0.5.")
         if "vce(cluster country_id)" not in do_file:
