@@ -97,24 +97,23 @@ outputs exist before reporting a successful run.
 ## Requirements
 
 - Stata 15.1 or later, installed and activated under a valid Stata license
-- The community-contributed `xtserial` command (Stata Journal package `st0039`)
+- No user-written ado packages or network downloads are required
 
-Stata is proprietary software. Full statistical reproduction requires a
-genuine, properly licensed and activated Stata installation. A modified or
-unlicensed installation that reports a bad serial number or another license
-validation error is not a valid execution environment; this is not a defect in
-the repository or its econometric code. Do not attempt to bypass license
-validation. Use an institutional, student, or other authorized license.
+The Wooldridge serial-correlation diagnostic is implemented directly with
+Stata's built-in `regress`, `predict`, and `test` commands. It follows the
+published procedure implemented by `xtserial` (Drukker, 2003), so the
+Stata Journal package `st0039` is not required. This removes the Java/network
+dependency that previously prevented the diagnostic from running.
 
-Install `xtserial` once before running the analysis. If a properly licensed
-Stata installation reports `Java installation not found`, StataCorp documents
-`update all, force` as a possible repair. Use that command only after Stata
-license activation is working. See
-[`docs/REPRODUCIBILITY.md`](docs/REPRODUCIBILITY.md) for the conditional
-repair and dependency-installation steps. The analysis do-file does not update
-Stata or install packages automatically. A Python-style `requirements.txt`
-is not needed.
+Stata is proprietary software. Full statistical reproduction still requires
+a genuine, properly licensed and activated Stata installation. A modified or
+unlicensed installation that reports a bad serial number is not a valid
+execution environment. Do not attempt to bypass license validation; use an
+institutional, student, or other authorized license.
 
+A Python-style `requirements.txt` is not needed. See
+[`docs/REPRODUCIBILITY.md`](docs/REPRODUCIBILITY.md) for the test procedure
+and its small-panel inference limitation.
 ## Reproduction
 
 Download or clone the repository, open Stata, and set the working directory to
@@ -125,23 +124,17 @@ cd "C:\path\to\nordic-gdp-health-panel-Stata"
 do replication/run_analysis.do
 ```
 
-Before the first run, confirm that Stata is properly licensed and activated.
-Do not run software updates to work around a serial-number or license error.
-Only if a properly licensed installation reports `Java installation not found`,
-follow StataCorp's conditional repair instruction (`update all, force`) in
-the reproducibility guide. Restart Stata if an update completes. Then install
-the dependency:
+Confirm that Stata is properly licensed and activated, set the
+working directory to the repository root, and run:
 
 ```stata
-net from https://www.stata-journal.com/software
-net cd sj3-2
-net describe st0039
-net install st0039
-which xtserial
+do replication/run_analysis.do
 ```
 
-The final command should return the installed ado-file location. Now execute
-`do replication/run_analysis.do` from the repository root.
+No Stata Journal package installation, Java setup, or network access is needed
+for the Wooldridge diagnostic. The do-file implements the published
+Wooldridge/Drukker procedure using built-in Stata commands and writes its
+results to `outputs/tables/wooldridge_serial_correlation_test.txt`.
 
 The script expects `data/raw/nordic_gdp_health_panel_2000_2018.xlsx` and recreates the documented
 tables, figures, processed dataset, and log. It checks the expected output files
@@ -157,7 +150,7 @@ see [`docs/REPRODUCIBILITY.md`](docs/REPRODUCIBILITY.md) for the distinction.
 
 | Location | Contents |
 | --- | --- |
-| `outputs/tables/` | Descriptive statistics, correlations, Hausman output, and model comparison |
+| `outputs/tables/` | Descriptive statistics, correlations, Hausman output, model comparison, and the Wooldridge serial-correlation test |
 | `outputs/figures/` | Three committed series plots; the residual diagnostic is generated on each run |
 | `outputs/logs/` | Complete Stata execution record generated on each run; not currently committed |
 | `data/processed/nordic_gdp_health_panel_2000_2018.dta` | Analysis-ready panel with variables created by the script |
