@@ -115,7 +115,7 @@ def main():
             errors.append("Guide must distinguish static CI from actual Stata execution.")
         if "No user-written ado packages" not in docs:
             errors.append("Guide must state that the analysis has no user-written ado dependency.")
-        if "equal to" not in docs or "-0.5" not in docs:
+        if ("equals" not in docs and "equal to" not in docs) or "-0.5" not in docs:
             errors.append("Guide must document the Wooldridge test null restriction.")
         if "four clusters" not in docs:
             errors.append("Guide must disclose the small-cluster inference limitation.")
