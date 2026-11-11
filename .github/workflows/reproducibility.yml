@@ -1,0 +1,26 @@
+name: Repository reproducibility checks
+
+on:
+  push:
+    branches: [main, reproducibility-hardening]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  static-validation:
+    name: Validate repository structure and instructions
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Validate repository files and documented paths
+        run: python scripts/validate_repository.py
