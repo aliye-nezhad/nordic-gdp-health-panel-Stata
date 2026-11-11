@@ -64,19 +64,22 @@ nordic-gdp-health-panel-stata/
 ├── README.md
 ├── LICENSE
 ├── .gitignore
-├── replication/
-│   └── run_analysis.do
 ├── data/
 │   ├── README.md
 │   ├── raw/
 │   │   └── nordic_gdp_health_panel_2000_2018.xlsx
 │   └── processed/
 │       └── nordic_gdp_health_panel_2000_2018.dta
+├── replication/
+│   └── run_analysis.do
 └── outputs/
     ├── figures/
     │   ├── age_dependency_by_country.png
+    │   ├── fe_residuals_vs_fitted.png
     │   ├── life_expectancy_by_country.png
     │   └── log_gdp_by_country.png
+    ├── logs/
+    │   └── nordic_panel_analysis.log
     └── tables/
         ├── correlation_matrix.txt
         ├── descriptive_statistics.txt
@@ -99,12 +102,18 @@ Download or clone the repository, open Stata, and set the working directory to
 the repository root. On Windows:
 
 ```stata
-cd "C:\path\to\nordic-gdp-health-panel-stata"
-do run_analysis.do
+cd "C:\path\to\nordic-gdp-health-panel-Stata"
+do replication/run_analysis.do
 ```
 
 The script expects `data/raw/nordic_gdp_health_panel_2000_2018.xlsx` and recreates the documented
-tables, figures, dataset, and log.
+tables, figures, dataset, and log. Run it using the path shown above; the do-file
+is stored in `replication/`, not in the repository root.
+
+A lightweight GitHub Actions check validates repository structure, required
+inputs, documented paths, and expected output names. It does **not** execute
+Stata. Actual statistical replication requires a licensed Stata installation;
+see [`docs/REPRODUCIBILITY.md`](docs/REPRODUCIBILITY.md) for the distinction.
 
 ## Output Guide
 
