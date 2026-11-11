@@ -7,7 +7,7 @@ Version:  Stata 15.1+
 
 Run this file from the repository root. Example:
     cd "C:\path\to\stata-panel-gdp-health"
-    do run_analysis.do
+    do replication/run_analysis.do
 *******************************************************************************/
 
 version 15.1
