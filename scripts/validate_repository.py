@@ -76,6 +76,10 @@ def main():
             errors.append("README must link to docs/REPRODUCIBILITY.md.")
         if "not yet committed as reference outputs" not in readme:
             errors.append("README must distinguish generated residual/log files from committed outputs.")
+        if "nordic-gdp-health-panel-stata/" in readme:
+            errors.append("README folder tree must use the canonical case-sensitive repository name.")
+        if "git clone https://github.com/aliye-nezhad/nordic-gdp-health-panel-Stata.git" not in readme:
+            errors.append("README must document the canonical repository clone URL.")
 
     if do_path.exists():
         do_file = do_path.read_text(encoding="utf-8")
@@ -94,8 +98,8 @@ def main():
             errors.append("Do-file must implement the first-difference regression for the Wooldridge test.")
         if "predict double _wooldridge_resid if e(sample), residuals" not in do_file:
             errors.append("Do-file must predict residuals from the first-difference regression.")
-        if "regress D.(lngdp lnl lna lnp) L._wooldridge_resid" not in do_file:
-            errors.append("Do-file must include the lagged first-difference residual in the Wooldridge auxiliary regression.")
+        if "regress _wooldridge_resid L._wooldridge_resid" not in do_file:
+            errors.append("Do-file must regress first-difference residuals on their own panel-specific lags.")
         if "test L._wooldridge_resid = -0.5" not in do_file:
             errors.append("Do-file must test the Wooldridge null restriction that the lag coefficient equals -0.5.")
         if "vce(cluster country_id)" not in do_file:
