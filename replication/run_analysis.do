@@ -200,8 +200,9 @@ Procedure:
 1. Regress first differences of the dependent and explanatory variables,
    without a constant, using panel-clustered standard errors.
 2. Predict residuals from that first-difference regression.
-3. Regress those residuals on their one-period lags, without a constant,
-   again clustering by panel.
+3. Regress the first differences of the original variables on their first
+   differences and the one-period lag of the first-difference residuals,
+   without a constant, clustering by panel.
 4. Test whether the lagged-residual coefficient equals -0.5.
 
 Reference: Drukker (2003), Stata Journal 3(2), 168-177.
@@ -228,7 +229,7 @@ else {
         local warning_count = `warning_count' + 1
     }
     else {
-        capture quietly regress _wooldridge_resid L._wooldridge_resid, ///
+        capture quietly regress D.(lngdp lnl lna lnp) L._wooldridge_resid, ///
             noconstant vce(cluster country_id)
         local wooldridge_rc = _rc
 
