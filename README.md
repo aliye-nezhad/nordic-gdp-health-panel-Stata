@@ -97,11 +97,14 @@ outputs exist before reporting a successful run.
 ## Requirements
 
 - Stata 15.1 or later
-- Internet access on the first run if the community-contributed `xtserial`
-  command is not already installed
+- The community-contributed `xtserial` command (Stata Journal package `st0039`)
 
-The script attempts to install `xtserial` from Stata Journal package `st0039`
-when needed. A Python-style `requirements.txt` is not needed.
+Install `xtserial` once before running the analysis. If Stata reports
+`Java installation not found` during network installation, run
+`update all, force`, restart Stata, and then install the package using the
+commands below. The analysis do-file does not attempt to repair or update
+Stata's machine-specific Java/network components. A Python-style
+`requirements.txt` is not needed.
 
 ## Reproduction
 
@@ -113,11 +116,29 @@ cd "C:\path\to\nordic-gdp-health-panel-Stata"
 do replication/run_analysis.do
 ```
 
+Before the first run, install the required diagnostic dependency in Stata:
+
+```stata
+update all, force
+```
+
+Restart Stata if the update reports that components were updated. Then run:
+
+```stata
+net from https://www.stata-journal.com/software
+net cd sj3-2
+net describe st0039
+net install st0039
+which xtserial
+```
+
+The final command should return the installed ado-file location. Now execute
+`do replication/run_analysis.do` from the repository root.
+
 The script expects `data/raw/nordic_gdp_health_panel_2000_2018.xlsx` and recreates the documented
 tables, figures, processed dataset, and log. It checks the expected output files
 at the end and reports success only when no diagnostic or output-validation
-warnings remain. Run it using the path shown above; the do-file is stored in
-`replication/`, not in the repository root.
+warnings remain. The do-file is stored in `replication/`, not in the repository root.
 
 A lightweight GitHub Actions check validates repository structure, required
 inputs, documented paths, and expected output names. It does **not** execute
