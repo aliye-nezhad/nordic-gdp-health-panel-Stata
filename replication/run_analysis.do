@@ -1,4 +1,4 @@
-/*******************************************************************************
+/*****************************************************************************
 Project:  GDP and Health Indicators in Nordic Countries, 2000-2018
 File:     run_analysis.do
 Purpose:  Reproduce the panel-data workflow and export reviewer-facing outputs
@@ -8,7 +8,7 @@ Version:  Stata 15.1+
 Run this file from the repository root. Example:
     cd "C:\path\to\nordic-gdp-health-panel-Stata"
     do replication/run_analysis.do
-*******************************************************************************/
+*****************************************************************************/
 
 version 15.1
 clear all
@@ -19,9 +19,9 @@ capture log close _all
 local data_file "data/raw/nordic_gdp_health_panel_2000_2018.xlsx"
 local warning_count 0
 
-/*******************************************************************************
+/*****************************************************************************
 0. Validate paths and create output folders
-*******************************************************************************/
+*****************************************************************************/
 
 capture confirm file "`data_file'"
 if _rc {
@@ -39,12 +39,12 @@ capture mkdir "data/processed"
 log using "outputs/logs/nordic_panel_analysis.log", ///
     replace text name(main_log)
 
-/*******************************************************************************
+/*****************************************************************************
 1. Import the original workbook
 
 Only columns A:H are imported. The formula-generated copies in columns J:Q
 are not used; logarithms are created directly in Stata below.
-*******************************************************************************/
+*****************************************************************************/
 
 import excel using "`data_file'", ///
     sheet("Sheet1") ///
@@ -57,9 +57,9 @@ rename (A B C D E F G H) ///
 
 replace country_name = strtrim(country_name)
 
-/*******************************************************************************
+/*****************************************************************************
 2. Prepare and validate the data
-*******************************************************************************/
+*****************************************************************************/
 
 foreach var in year country_id time_id gdp life_expectancy age_dependency population {
     capture confirm numeric variable `var'
@@ -95,13 +95,15 @@ foreach var in gdp life_expectancy age_dependency population {
 
 quietly summarize population if country_name == "Denmark", meanonly
 if r(max) < 1000000 {
-    display as text "DATA NOTE: Denmark's population field is on a different scale from the other countries."
-    display as text "The historical values are preserved; substantive interpretation requires caution."
+    display as text ///
+        "DATA NOTE: Denmark's population field is on a different scale from the other countries."
+    display as text ///
+        "The historical values are preserved; substantive interpretation requires caution."
 }
 
-/*******************************************************************************
+/*****************************************************************************
 3. Generate logarithms and labels
-*******************************************************************************/
+*****************************************************************************/
 
 generate double lngdp = ln(gdp)
 generate double lnl   = ln(life_expectancy)
@@ -127,18 +129,18 @@ label values country_id country_label
 order country_name year country_id time_id gdp life_expectancy ///
       age_dependency population lngdp lnl lna lnp
 
-/*******************************************************************************
+/*****************************************************************************
 4. Declare the panel and save the analysis-ready dataset
-*******************************************************************************/
+*****************************************************************************/
 
 xtset country_id year
 xtdescribe
 
 save "data/processed/nordic_gdp_health_panel_2000_2018.dta", replace
 
-/*******************************************************************************
+/*****************************************************************************
 5. Descriptive statistics
-*******************************************************************************/
+*****************************************************************************/
 
 log using "outputs/tables/descriptive_statistics.txt", ///
     replace text name(descriptive_log)
@@ -147,9 +149,9 @@ summarize lngdp lnl lna lnp
 
 log close descriptive_log
 
-/*******************************************************************************
+/*****************************************************************************
 6. Correlation matrix
-*******************************************************************************/
+*****************************************************************************/
 
 log using "outputs/tables/correlation_matrix.txt", ///
     replace text name(correlation_log)
@@ -158,9 +160,9 @@ correlate lngdp lnl lna lnp
 
 log close correlation_log
 
-/*******************************************************************************
+/*****************************************************************************
 7. Fixed-effects model and diagnostics
-*******************************************************************************/
+*****************************************************************************/
 
 xtreg lngdp lnl lna lnp, fe
 estimates store FE
@@ -168,9 +170,9 @@ estimates store FE
 predict double fe_fitted, xbu
 predict double fe_residuals, e
 
-/*******************************************************************************
+/*****************************************************************************
 8. Random-effects model and Hausman test
-*******************************************************************************/
+*****************************************************************************/
 
 xtreg lngdp lnl lna lnp, re
 estimates store RE
@@ -188,7 +190,7 @@ if `hausman_rc' != 0 {
     local warning_count = `warning_count' + 1
 }
 
-/*******************************************************************************
+/*****************************************************************************
 9. Wooldridge serial-correlation test
 
 Native Stata implementation of the Wooldridge/Drukker test. This follows the
@@ -205,7 +207,7 @@ Procedure:
 4. Test whether the lagged-residual coefficient equals -0.5.
 
 Reference: Drukker (2003), Stata Journal 3(2), 168-177.
-*******************************************************************************/
+*****************************************************************************/
 
 log using "outputs/tables/wooldridge_serial_correlation_test.txt", ///
     replace text name(wooldridge_log)
@@ -216,7 +218,8 @@ capture quietly regress D.(lngdp lnl lna lnp), ///
 local wooldridge_rc = _rc
 
 if `wooldridge_rc' != 0 {
-    display as error "Wooldridge test failed in the first-difference regression; return code `wooldridge_rc'."
+    display as error ///
+        "Wooldridge test failed in the first-difference regression; return code `wooldridge_rc'."
     local warning_count = `warning_count' + 1
 }
 else {
@@ -224,7 +227,8 @@ else {
     local wooldridge_rc = _rc
 
     if `wooldridge_rc' != 0 {
-        display as error "Wooldridge test could not generate first-difference residuals; return code `wooldridge_rc'."
+        display as error ///
+            "Wooldridge test could not generate first-difference residuals; return code `wooldridge_rc'."
         local warning_count = `warning_count' + 1
     }
     else {
@@ -233,7 +237,8 @@ else {
         local wooldridge_rc = _rc
 
         if `wooldridge_rc' != 0 {
-            display as error "Wooldridge test failed in the residual regression; return code `wooldridge_rc'."
+            display as error ///
+                "Wooldridge test failed in the residual regression; return code `wooldridge_rc'."
             local warning_count = `warning_count' + 1
         }
         else {
@@ -241,7 +246,8 @@ else {
             local wooldridge_rc = _rc
 
             if `wooldridge_rc' != 0 {
-                display as error "Wooldridge test restriction could not be evaluated; return code `wooldridge_rc'."
+                display as error ///
+                    "Wooldridge test restriction could not be evaluated; return code `wooldridge_rc'."
                 local warning_count = `warning_count' + 1
             }
             else {
@@ -266,9 +272,9 @@ else {
 
 capture drop _wooldridge_resid
 log close wooldridge_log
-/*******************************************************************************
+/*****************************************************************************
 10. Historical AR(1) and FGLS specifications
-*******************************************************************************/
+*****************************************************************************/
 
 xtregar lngdp lnl lna lnp, fe
 estimates store FE_AR1
@@ -279,9 +285,9 @@ xtgls lngdp lnl lna lnp, ///
     igls
 estimates store GLS_AR1
 
-/*******************************************************************************
+/*****************************************************************************
 11. Export the model comparison
-*******************************************************************************/
+*****************************************************************************/
 
 log using "outputs/tables/model_comparison.txt", ///
     replace text name(regression_log)
@@ -293,11 +299,11 @@ estimates table FE RE FE_AR1 GLS_AR1, ///
 
 log close regression_log
 
-/*******************************************************************************
+/*****************************************************************************
 12. Export figures
 
 The title is placed inside by() so it appears once above each faceted graph.
-*******************************************************************************/
+*****************************************************************************/
 
 twoway line lngdp year, sort ///
     by(country_name, cols(2) title("Log GDP Over Time") note("")) ///
@@ -329,15 +335,24 @@ twoway scatter fe_residuals fe_fitted, ///
 
 graph export "outputs/figures/fe_residuals_vs_fitted.png", replace width(2000)
 
-/*******************************************************************************
+/*****************************************************************************
 13. Validate generated artifacts
 
 This is an execution check only. It does not alter the model or estimates.
-*******************************************************************************/
+*****************************************************************************/
 
-local expected_outputs "data/processed/nordic_gdp_health_panel_2000_2018.dta outputs/tables/descriptive_statistics.txt outputs/tables/correlation_matrix.txt outputs/tables/hausman_test.txt outputs/tables/model_comparison.txt outputs/tables/wooldridge_serial_correlation_test.txt outputs/figures/log_gdp_by_country.png outputs/figures/life_expectancy_by_country.png outputs/figures/age_dependency_by_country.png outputs/figures/fe_residuals_vs_fitted.png outputs/logs/nordic_panel_analysis.log"
-
-foreach output of local expected_outputs {
+foreach output in ///
+    data/processed/nordic_gdp_health_panel_2000_2018.dta ///
+    outputs/tables/descriptive_statistics.txt ///
+    outputs/tables/correlation_matrix.txt ///
+    outputs/tables/hausman_test.txt ///
+    outputs/tables/model_comparison.txt ///
+    outputs/tables/wooldridge_serial_correlation_test.txt ///
+    outputs/figures/log_gdp_by_country.png ///
+    outputs/figures/life_expectancy_by_country.png ///
+    outputs/figures/age_dependency_by_country.png ///
+    outputs/figures/fe_residuals_vs_fitted.png ///
+    outputs/logs/nordic_panel_analysis.log {
     capture confirm file "`output'"
     if _rc {
         display as error "Required output missing: `output'"
@@ -345,9 +360,9 @@ foreach output of local expected_outputs {
     }
 }
 
-/*******************************************************************************
+/*****************************************************************************
 14. Finish
-*******************************************************************************/
+*****************************************************************************/
 
 if `warning_count' == 0 {
     display as result "Analysis completed successfully."
