@@ -1,10 +1,11 @@
-# Stata do-files
-*.do linguist-language=Stata
+# Stata source files
+*.do text eol=lf linguist-language=Stata
 
 # Documentation and configuration
-*.md linguist-detectable=false
-*.yml linguist-detectable=false
-*.yaml linguist-detectable=false
+*.md text eol=lf linguist-detectable=false
+*.yml text eol=lf linguist-detectable=false
+*.yaml text eol=lf linguist-detectable=false
+*.sha256 text eol=lf linguist-detectable=false
 LICENSE linguist-detectable=false
 
 # Data and results
