@@ -17,7 +17,7 @@ The analysis examines how log GDP varies with life expectancy, the age-dependenc
 +\epsilon_{it},
 \]
 
-where \(\alpha_i\) denotes country-specific effects.
+where \(\alpha_i\) denotes country-specific effects. The baseline includes country effects but no year fixed effects.
 
 The original level variables are imported from columns A–H of the workbook. Logarithms are calculated in Stata; formula-generated log columns elsewhere in the workbook are not used.
 
