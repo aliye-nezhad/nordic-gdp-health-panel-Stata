@@ -1,4 +1,4 @@
-name: Stata repository files
+name: Stata repository checks
 
 on:
   push:
@@ -17,7 +17,7 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v5
 
-      - name: Check files and run instructions
+      - name: Check files, input integrity, and run instructions
         shell: bash
         run: |
           set -euo pipefail
@@ -28,15 +28,19 @@ jobs:
             .gitignore \
             .gitattributes \
             data/README.md \
+            data/raw.sha256 \
             data/raw/nordic_gdp_health_panel_2000_2018.xlsx \
             data/processed/nordic_gdp_health_panel_2000_2018.dta \
-            replication/run_analysis.do \
-            docs/REPRODUCIBILITY.md; do
+            docs/REPRODUCIBILITY.md \
+            outputs/README.md \
+            replication/run_analysis.do; do
             if [[ ! -s "$path" ]]; then
               echo "::error::Missing or empty required file: $path"
               exit 1
             fi
           done
+
+          sha256sum --check data/raw.sha256
 
           for path in \
             outputs/tables/descriptive_statistics.txt \
@@ -62,6 +66,7 @@ jobs:
           grep -Fq "git clone https://github.com/aliye-nezhad/nordic-gdp-health-panel-Stata.git" README.md
           grep -Fq "do replication/run_analysis.do" README.md
           grep -Fq "docs/REPRODUCIBILITY.md" README.md
+          grep -Fq "outputs/README.md" README.md
 
           if grep -Fq "do run_analysis.do" README.md; then
             echo "::error::README contains an obsolete root-level do-file command."
@@ -71,6 +76,9 @@ jobs:
           grep -Fq "version 15.1" replication/run_analysis.do
           grep -Fq 'local data_file "data/raw/nordic_gdp_health_panel_2000_2018.xlsx"' replication/run_analysis.do
           grep -Fq "do replication/run_analysis.do" replication/run_analysis.do
+          grep -Fq "assert _N == 76" replication/run_analysis.do
+          grep -Fq "isid country_id year" replication/run_analysis.do
+          grep -Fq "by country_id: assert _N == 19" replication/run_analysis.do
 
           for path in \
             data/processed/nordic_gdp_health_panel_2000_2018.dta \
@@ -102,16 +110,12 @@ jobs:
 
           if grep -Fq "net install st0039" replication/run_analysis.do || \
              grep -Fq "xtserial lngdp lnl lna lnp" replication/run_analysis.do; then
-            echo "::error::The do-file must use the built-in commands for the Wooldridge test."
+            echo "::error::The do-file must use built-in commands for the Wooldridge test."
             exit 1
           fi
 
+          grep -Fq "sha256sum --check data/raw.sha256" docs/REPRODUCIBILITY.md
           grep -Fq "do replication/run_analysis.do" docs/REPRODUCIBILITY.md
-          for path in \
-            outputs/tables/wooldridge_serial_correlation_test.txt \
-            outputs/figures/fe_residuals_vs_fitted.png \
-            outputs/logs/nordic_panel_analysis.log; do
-            grep -Fq "$path" docs/REPRODUCIBILITY.md
-          done
+          grep -Fq "does not launch Stata" docs/REPRODUCIBILITY.md
 
-          echo "Required files and documented paths are present. Model estimates require a Stata run."
+          echo "Repository files and input checksum passed static validation. Model estimates require a Stata run."
