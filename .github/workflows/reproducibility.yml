@@ -96,6 +96,8 @@ jobs:
           done
 
           grep -Fq "Required output missing:" replication/run_analysis.do
+          grep -Fq "local missing_output_count 0" replication/run_analysis.do
+          grep -Fq "exit 498" replication/run_analysis.do
           grep -Fq "regress D.(lngdp lnl lna lnp)" replication/run_analysis.do
           grep -Fq "predict double _wooldridge_resid if e(sample), residuals" replication/run_analysis.do
           grep -Fq "regress _wooldridge_resid L._wooldridge_resid" replication/run_analysis.do
