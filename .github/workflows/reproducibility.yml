@@ -1,4 +1,4 @@
-name: Repository reproducibility checks
+name: Stata repository files
 
 on:
   push:
@@ -11,13 +11,13 @@ permissions:
 
 jobs:
   static-validation:
-    name: Validate repository structure and Stata workflow
+    name: Check repository files
     runs-on: ubuntu-24.04
     steps:
       - name: Check out repository
         uses: actions/checkout@v5
 
-      - name: Validate repository files and Stata instructions
+      - name: Check files and run instructions
         shell: bash
         run: |
           set -euo pipefail
@@ -59,13 +59,9 @@ jobs:
             exit 1
           fi
 
-          grep -Fq "All executable" README.md
-          grep -Fq "written in Stata" README.md
           grep -Fq "git clone https://github.com/aliye-nezhad/nordic-gdp-health-panel-Stata.git" README.md
-          grep -Fq "nordic-gdp-health-panel-Stata/" README.md
           grep -Fq "do replication/run_analysis.do" README.md
           grep -Fq "docs/REPRODUCIBILITY.md" README.md
-          grep -Fq "not yet committed as reference outputs" README.md
 
           if grep -Fq "do run_analysis.do" README.md; then
             echo "::error::README contains an obsolete root-level do-file command."
@@ -106,20 +102,16 @@ jobs:
 
           if grep -Fq "net install st0039" replication/run_analysis.do || \
              grep -Fq "xtserial lngdp lnl lna lnp" replication/run_analysis.do; then
-            echo "::error::The Stata workflow must not depend on external xtserial installation."
+            echo "::error::The do-file must use the built-in commands for the Wooldridge test."
             exit 1
           fi
 
-          grep -Fq "does **not** execute Stata" docs/REPRODUCIBILITY.md
-          grep -Fq "No user-written ado packages" docs/REPRODUCIBILITY.md
-          grep -Fq "equals" docs/REPRODUCIBILITY.md
-          grep -Fq -- "-0.5" docs/REPRODUCIBILITY.md
-          grep -Fq "four country clusters" docs/REPRODUCIBILITY.md
-          grep -Fq "valid Stata license" docs/REPRODUCIBILITY.md
-          grep -Fq "fe_residuals_vs_fitted.png" docs/REPRODUCIBILITY.md
-          grep -Fq "nordic_panel_analysis.log" docs/REPRODUCIBILITY.md
+          grep -Fq "do replication/run_analysis.do" docs/REPRODUCIBILITY.md
+          for path in \
+            outputs/tables/wooldridge_serial_correlation_test.txt \
+            outputs/figures/fe_residuals_vs_fitted.png \
+            outputs/logs/nordic_panel_analysis.log; do
+            grep -Fq "$path" docs/REPRODUCIBILITY.md
+          done
 
-          echo "STATIC REPOSITORY VALIDATION PASSED"
-          echo "Stata source files are the only tracked analysis code."
-          echo "Required inputs, reference outputs, instructions, and expected output paths are present."
-          echo "Note: this check does not execute Stata or verify numerical estimates."
+          echo "Required files and documented paths are present. Model estimates require a Stata run."

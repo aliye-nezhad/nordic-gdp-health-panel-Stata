@@ -1,12 +1,12 @@
-# Stata do-files are the repository's only detectable source-code language.
+# Stata do-files
 *.do linguist-language=Stata
 
-# Documentation and workflow configuration are not source-code languages.
+# Documentation and configuration
 *.md linguist-detectable=false
 *.yml linguist-detectable=false
 *.yaml linguist-detectable=false
 LICENSE linguist-detectable=false
 
-# Research data and generated outputs are artifacts, not source code.
+# Data and results
 data/** linguist-detectable=false
 outputs/** linguist-detectable=false

@@ -1,7 +1,7 @@
 /*******************************************************************************
 Project:  GDP and Health Indicators in Nordic Countries, 2000-2018
 File:     run_analysis.do
-Purpose:  Reproduce the panel-data workflow and export reviewer-facing outputs
+Purpose:  Estimate the panel models and save the tables and figures
 Author:   Aliye Nezhad
 Version:  Stata 15.1+
 
@@ -20,13 +20,13 @@ local data_file "data/raw/nordic_gdp_health_panel_2000_2018.xlsx"
 local warning_count 0
 
 /*******************************************************************************
-0. Validate paths and create output folders
+0. Check the workbook path and open the log
 *******************************************************************************/
 
 capture confirm file "`data_file'"
 if _rc {
     display as error "Input file not found: `data_file'"
-    display as error "Set the working directory to the repository root and rerun run_analysis.do."
+    display as error "From the repository root, run do replication/run_analysis.do."
     exit 601
 }
 
@@ -42,8 +42,7 @@ log using "outputs/logs/nordic_panel_analysis.log", ///
 /*******************************************************************************
 1. Import the original workbook
 
-Only columns A:H are imported. The formula-generated copies in columns J:Q
-are not used; logarithms are created directly in Stata below.
+Columns A:H contain the data in levels. Stata calculates the logarithms below.
 *******************************************************************************/
 
 import excel using "`data_file'", ///
@@ -58,7 +57,7 @@ rename (A B C D E F G H) ///
 replace country_name = strtrim(country_name)
 
 /*******************************************************************************
-2. Prepare and validate the data
+2. Check country and year identifiers and the values used in logs
 *******************************************************************************/
 
 foreach var in year country_id time_id gdp life_expectancy age_dependency population {
@@ -95,12 +94,12 @@ foreach var in gdp life_expectancy age_dependency population {
 
 quietly summarize population if country_name == "Denmark", meanonly
 if r(max) < 1000000 {
-    display as error "DATA NOTE: Denmark's population field is on a different scale from the other countries."
-    display as error "The historical values are preserved; substantive interpretation requires caution."
+    display as text "Denmark's population field is in the tens of thousands. The other countries' values are in the millions."
+    display as text "The models use the workbook values as recorded."
 }
 
 /*******************************************************************************
-3. Generate logarithms and labels
+3. Take logs and label the variables
 *******************************************************************************/
 
 generate double lngdp = ln(gdp)
@@ -191,20 +190,12 @@ if `hausman_rc' != 0 {
 /*******************************************************************************
 9. Wooldridge serial-correlation test
 
-Native Stata implementation of the Wooldridge/Drukker test. This follows the
-published xtserial procedure using built-in regress, predict, and test
-commands. No user-written ado package, Java component, or network download
-is required.
+Regress the change in log GDP on changes in the three logged regressors.
+Then regress the residuals on their one-year lag. Both regressions omit the
+constant and cluster standard errors by country. Under the null, the
+lagged-residual coefficient is -0.5.
 
-Procedure:
-1. Regress first differences of the dependent and explanatory variables,
-   without a constant, using panel-clustered standard errors.
-2. Predict residuals from that first-difference regression.
-3. Regress the first-difference residuals on their one-period lags, without
-   a constant, using standard errors clustered by panel.
-4. Test whether the lagged-residual coefficient equals -0.5.
-
-Reference: Drukker (2003), Stata Journal 3(2), 168-177.
+See Drukker (2003), Stata Journal 3(2), 168-177.
 *******************************************************************************/
 
 log using "outputs/tables/wooldridge_serial_correlation_test.txt", ///
@@ -224,7 +215,7 @@ else {
     local wooldridge_rc = _rc
 
     if `wooldridge_rc' != 0 {
-        display as error "Wooldridge test could not generate first-difference residuals; return code `wooldridge_rc'."
+        display as error "Could not calculate the first-difference residuals. Stata return code `wooldridge_rc'."
         local warning_count = `warning_count' + 1
     }
     else {
@@ -330,9 +321,7 @@ twoway scatter fe_residuals fe_fitted, ///
 graph export "outputs/figures/fe_residuals_vs_fitted.png", replace width(2000)
 
 /*******************************************************************************
-13. Validate generated artifacts
-
-This is an execution check only. It does not alter the model or estimates.
+13. Check that the run wrote all result files
 *******************************************************************************/
 
 local expected_outputs "data/processed/nordic_gdp_health_panel_2000_2018.dta outputs/tables/descriptive_statistics.txt outputs/tables/correlation_matrix.txt outputs/tables/hausman_test.txt outputs/tables/model_comparison.txt outputs/tables/wooldridge_serial_correlation_test.txt outputs/figures/log_gdp_by_country.png outputs/figures/life_expectancy_by_country.png outputs/figures/age_dependency_by_country.png outputs/figures/fe_residuals_vs_fitted.png outputs/logs/nordic_panel_analysis.log"
