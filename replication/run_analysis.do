@@ -1,7 +1,7 @@
 /*****************************************************************************
 Project:  GDP and Health Indicators in Nordic Countries, 2000-2018
 File:     run_analysis.do
-Purpose:  Reproduce the panel-data workflow and export reviewer-facing outputs
+Purpose:  Reproduce the panel workflow and export analysis outputs
 Author:   Aliye Nezhad
 Version:  Stata 15.1+
 
@@ -18,6 +18,7 @@ capture log close _all
 
 local data_file "data/raw/nordic_gdp_health_panel_2000_2018.xlsx"
 local warning_count 0
+local missing_output_count 0
 
 /*****************************************************************************
 0. Validate paths and create output folders
@@ -356,13 +357,20 @@ foreach output in ///
     capture confirm file "`output'"
     if _rc {
         display as error "Required output missing: `output'"
-        local warning_count = `warning_count' + 1
+        local missing_output_count = `missing_output_count' + 1
     }
 }
 
 /*****************************************************************************
 14. Finish
 *****************************************************************************/
+
+if `missing_output_count' > 0 {
+    display as error "Analysis failed: `missing_output_count' required output file(s) are missing."
+    display as result "Main log: outputs/logs/nordic_panel_analysis.log"
+    log close main_log
+    exit 498
+}
 
 if `warning_count' == 0 {
     display as result "Analysis completed successfully."
