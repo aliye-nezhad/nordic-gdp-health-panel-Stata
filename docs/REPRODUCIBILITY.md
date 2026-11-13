@@ -1,23 +1,76 @@
-# Reproducing the results
+# Reproducing the analysis
 
-Open a licensed copy of Stata 15.1 or later and set the working directory to the repository folder. The do-file uses built-in Stata commands.
+## Software requirements
 
-```stata
+The analysis requires a licensed installation of Stata 15.1 or later. The do-file uses built-in Stata commands; no user-written ado package, Java component, or network download is required.
+
+The commands use paths relative to the repository root. Run the do-file with the working directory set to that root.
+
+## Obtain the repository and verify the input
+
+Clone the repository:
+
+~~~bash
+git clone https://github.com/aliye-nezhad/nordic-gdp-health-panel-Stata.git
+cd nordic-gdp-health-panel-Stata
+~~~
+
+On Linux or macOS, verify the workbook checksum with:
+
+~~~bash
+sha256sum --check data/raw.sha256
+~~~
+
+On Windows PowerShell, calculate the digest with:
+
+~~~powershell
+Get-FileHash .\data\raw\nordic_gdp_health_panel_2000_2018.xlsx -Algorithm SHA256
+~~~
+
+The calculated digest should match the value recorded in `data/raw.sha256`.
+
+## Run the do-file
+
+Open Stata, change the working directory to the repository root, and execute:
+
+~~~stata
 do replication/run_analysis.do
-```
+~~~
 
-The do-file imports [the workbook](../data/raw/nordic_gdp_health_panel_2000_2018.xlsx) and prepares the country-year panel before fitting the models. It replaces the processed dataset, tables, and figures in the working copy. It also writes these files when run in Stata.
+The script imports the workbook, validates the panel, constructs the logarithms, estimates the models, and writes the results. Existing files at the listed output paths are replaced in the working copy.
 
-| File | Contents |
+## Generated files
+
+| Path | Contents |
 | --- | --- |
-| `outputs/tables/wooldridge_serial_correlation_test.txt` | Test for serial correlation |
-| `outputs/figures/fe_residuals_vs_fitted.png` | Residuals and fitted values from the fixed-effects model |
-| `outputs/logs/nordic_panel_analysis.log` | Stata commands, estimation results, and messages |
+| `data/processed/nordic_gdp_health_panel_2000_2018.dta` | Analysis-ready Stata dataset |
+| `outputs/tables/descriptive_statistics.txt` | Descriptive statistics for the logged variables |
+| `outputs/tables/correlation_matrix.txt` | Correlations among the logged variables |
+| `outputs/tables/hausman_test.txt` | Fixed-effects versus random-effects specification test |
+| `outputs/tables/wooldridge_serial_correlation_test.txt` | Wooldridge/Drukker serial-correlation diagnostic |
+| `outputs/tables/model_comparison.txt` | FE, RE, FE-AR(1), and FGLS-AR(1) estimates |
+| `outputs/figures/log_gdp_by_country.png` | Log GDP by country over time |
+| `outputs/figures/life_expectancy_by_country.png` | Life expectancy by country over time |
+| `outputs/figures/age_dependency_by_country.png` | Age-dependency ratio by country over time |
+| `outputs/figures/fe_residuals_vs_fitted.png` | Fixed-effects residuals against fitted values |
+| `outputs/logs/nordic_panel_analysis.log` | Main Stata execution log |
 
-## Wooldridge test for serial correlation
+The do-file checks whether each expected output file exists and reports any missing files. This is an output-presence check; it does not compare the newly generated estimates with a numerical benchmark.
 
-First I regress the first difference of log GDP on the first differences of the three regressors without a constant. I then regress the residuals on their one-year lag, again without a constant, and test whether the lag coefficient equals −0.5. Both regressions use standard errors clustered by country. The panel has four country clusters, so the usual clustered p-value can be unreliable. [Drukker (2003)](https://doi.org/10.1177/1536867X0300300206)
+## Diagnostic and interpretation notes
 
-## Checking a Stata run
+The Wooldridge/Drukker procedure is implemented with built-in Stata commands. The auxiliary regressions use country-clustered standard errors. With only four country clusters, the resulting p-value can be unreliable and should not be treated as decisive evidence.
 
-A run that produces all eleven files and reports no diagnostic errors ends with `Analysis completed successfully.` If Stata reports a warning, the log or the individual test report identifies the step to inspect. Use the 76-observation panel and the four saved tables as reference points when comparing results. Stata records the run date and the working path in text logs, so compare their estimates and test statistics directly.
+The Hausman test may fail if the estimated covariance-difference matrix does not satisfy the test's requirements. Such a failure is reported as a warning; it does not change the underlying fixed-effects or random-effects estimates.
+
+The historical workbook has an unexplained population-field scale or definition inconsistency for Denmark. The analysis preserves the values as supplied. The workbook also lacks complete upstream source metadata and documentation of the GDP price basis and units. These limitations should accompany interpretation of the estimates.
+
+## What GitHub Actions checks
+
+The workflow checks the presence of required files, the documented execution paths, selected components of the do-file, and the SHA-256 checksum of the raw workbook. It does not launch Stata, execute the do-file, or verify regression estimates. A successful workflow run confirms that these repository-level checks passed only.
+
+The committed files in `outputs/` are reference outputs from an earlier Stata execution. They are not regenerated by GitHub Actions. See the [outputs guide](../outputs/README.md) for the distinction between committed reference files and the full set of files generated by a new run.
+
+## Reference
+
+Drukker, D. M. (2003). Testing for serial correlation in linear panel-data models. `The Stata Journal`, 3(2), 168–177. [https://doi.org/10.1177/1536867X0300300206](https://doi.org/10.1177/1536867X0300300206)
