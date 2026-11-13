@@ -37,7 +37,7 @@ The do-file [replication/run_analysis.do](replication/run_analysis.do) performs 
 4. Estimates country fixed-effects and random-effects models and performs a Hausman specification test.
 5. Implements the Wooldridge/Drukker serial-correlation procedure using built-in Stata commands.
 6. Estimates fixed-effects AR(1) and feasible GLS AR(1) specifications as additional model comparisons.
-7. Constructs fitted values and residuals, exports figures and tables, saves the processed dataset, and checks that the expected output files exist.
+7. Constructs fitted values and residuals, exports figures and tables, saves the processed dataset, and returns a nonzero status if any expected output file is missing.
 
 The panel contains only four countries. Cluster-robust inference based on four country clusters is therefore fragile, and the serial-correlation test's clustered p-value should not be treated as decisive. The AR(1) and FGLS estimates are reported as specification comparisons, not as a basis for causal interpretation. Shared time trends, omitted factors, and the population-field inconsistency further limit interpretation.
 
