@@ -55,7 +55,7 @@ The script imports the workbook, validates the panel, constructs the logarithms,
 | `outputs/figures/fe_residuals_vs_fitted.png` | Fixed-effects residuals against fitted values |
 | `outputs/logs/nordic_panel_analysis.log` | Main Stata execution log |
 
-The do-file checks whether each expected output file exists and reports any missing files. This is an output-presence check; it does not compare the newly generated estimates with a numerical benchmark.
+The do-file checks whether each expected output file exists and returns a nonzero status if any are missing. This is an output-presence check; it does not compare the newly generated estimates with a numerical benchmark.
 
 ## Diagnostic and interpretation notes
 
