@@ -1,6 +1,10 @@
-# Stata temporary files
+# Stata temporary and swap files
 *.stswp
 *.tmp
+*.smcl
+
+# Local execution log (machine-specific run metadata)
+/outputs/logs/*.log
 
 # Operating-system files
 .DS_Store
