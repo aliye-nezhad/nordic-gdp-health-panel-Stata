@@ -71,22 +71,36 @@ GitHub Actions checks required files, documented paths, key workflow components,
 ## Repository structure
 
 ~~~text
-├── .github/workflows/reproducibility.yml
+├── docs/
+│   └── REPRODUCIBILITY.md
+├── .github/workflows/
+│   └── reproducibility.yml
 ├── data/
 │   ├── raw/
 │   │   └── nordic_gdp_health_panel_2000_2018.xlsx
 │   ├── processed/
 │   │   └── nordic_gdp_health_panel_2000_2018.dta
-│   ├── raw.sha256
-│   └── README.md
-├── docs/REPRODUCIBILITY.md
+│   ├── README.md
+│   └── raw.sha256
+├── replication/
+│   └── run_analysis.do
 ├── outputs/
 │   ├── figures/
+│   │   ├── age_dependency_by_country.png
+│   │   ├── life_expectancy_by_country.png
+│   │   └── log_gdp_by_country.png
 │   ├── tables/
+│   │   ├── correlation_matrix.txt
+│   │   ├── descriptive_statistics.txt
+│   │   ├── hausman_test.txt
+│   │   └── model_comparison.txt
 │   └── README.md
-├── replication/run_analysis.do
-└── LICENSE
+├── .gitattributes
+├── .gitignore
+├── LICENSE
+└── README.md
 ~~~
+
 
 ## Author
 
