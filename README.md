@@ -8,16 +8,16 @@ The analysis is an observational panel-data exercise. Its estimates describe ass
 
 The analysis examines how log GDP varies with life expectancy, the age-dependency ratio, and the population field in the historical workbook. The baseline specification is:
 
-\[
+$$
 \ln(GDP_{it}) =
 \alpha_i
 +\beta_1\ln(LifeExpectancy_{it})
 +\beta_2\ln(AgeDependency_{it})
 +\beta_3\ln(Population_{it})
 +\epsilon_{it},
-\]
+$$
 
-where \(\alpha_i\) denotes country-specific effects. The baseline includes country effects but no year fixed effects.
+where $\alpha_i$ denotes country-specific effects. The baseline includes country effects but no year fixed effects.
 
 The original level variables are imported from columns A–H of the workbook. Logarithms are calculated in Stata; formula-generated log columns elsewhere in the workbook are not used.
 
