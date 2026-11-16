@@ -1,4 +1,4 @@
-# GDP and Health Indicators in Nordic Countries, 2000–2018
+# GDP and Health Indicators in Nordic Countries
 
 This repository contains a Stata analysis of the relationship between GDP and selected health and demographic indicators in Denmark, Finland, Norway, and Sweden over 2000–2018. The source workbook contains 76 country-year observations, forming a strongly balanced annual panel with 19 observations for each country.
 
